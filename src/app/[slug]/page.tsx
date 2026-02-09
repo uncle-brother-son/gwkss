@@ -58,10 +58,11 @@ async function getSiteSettings() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  const { slug } = await params;
   const [page, settings] = await Promise.all([
-    getPageData(params.slug),
+    getPageData(slug),
     getSiteSettings(),
   ]);
 
@@ -94,8 +95,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const page = await getPageData(params.slug);
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const page = await getPageData(slug);
 
   if (!page) {
     notFound();
