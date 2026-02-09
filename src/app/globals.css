@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer utilities {
+  body { @apply bg-white text-black font-sans; }
+
+  a { @apply hover:text-purple ; }
+  a.active { @apply underline underline-offset-4; }
+  .page-content p { @apply mt-2; }
+  .page-content ul { @apply mt-2 list-disc list-inside; }
+  .page-content ul li {}
+  .page-content p:first-child { @apply mt-0; }
+}
