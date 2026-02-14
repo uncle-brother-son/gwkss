@@ -53,6 +53,48 @@ npm run build
 npm start
 ```
 
+## Deploy to Cloudflare Pages
+
+This project is configured for deployment on Cloudflare Pages.
+
+### Prerequisites
+
+1. Install Wrangler CLI:
+```bash
+npm install -g wrangler
+```
+
+2. Login to Cloudflare:
+```bash
+wrangler login
+```
+
+### Build and Deploy
+
+Build the project for Cloudflare Pages:
+```bash
+npm run pages:build
+```
+
+Deploy to Cloudflare Pages:
+```bash
+npm run pages:deploy
+```
+
+Or deploy from GitHub:
+1. Push your code to GitHub
+2. Connect your repository to Cloudflare Pages in the Cloudflare dashboard
+3. Use these build settings:
+   - **Build command**: `npm run pages:build`
+   - **Build output directory**: `.open-next/worker`
+   - **Node version**: 20.18.1
+
+### Environment Variables
+
+Add your Sanity environment variables in Cloudflare Pages dashboard:
+- `NEXT_PUBLIC_SANITY_PROJECT_ID`
+- `NEXT_PUBLIC_SANITY_DATASET`
+
 ## Adding Sanity CMS (Optional)
 
 To integrate Sanity CMS for content management, you can set up a separate Sanity Studio:
@@ -123,7 +165,10 @@ Mobile: 07971 246 333
 ## Scripts
 
 - `npm run dev` - Start development server (port 3000)
+- `npm run dev:studio` - Start Sanity Studio (port 3333)
 - `npm run build` - Build for production
+- `npm run pages:build` - Build for Cloudflare Pages
+- `npm run pages:deploy` - Deploy to Cloudflare Pages
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
 

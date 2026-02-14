@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Cloudflare Pages optimization
+  output: "standalone",
 };
 
 export default nextConfig;
