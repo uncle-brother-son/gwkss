@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:studio": "cd studio && npm run dev",
     "build": "next build",
-    "pages:build": "npx @opennextjs/cloudflare",
+    "pages:build": "npx @opennextjs/cloudflare build",
     "pages:dev": "next dev",
     "pages:deploy": "npm run pages:build && wrangler pages deploy .open-next/worker",
     "start": "next start",
