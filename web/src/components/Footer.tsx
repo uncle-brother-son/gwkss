@@ -1,12 +1,4 @@
-import { client } from "@/lib/sanity";
-
-async function getSiteSettings() {
-  return client.fetch(`*[_type == "siteSettings"][0]{
-    companyName,
-    email,
-    phone
-  }`);
-}
+import { getSiteSettings } from "@/lib/sanity/queries";
 
 export default async function Footer() {
   const settings = await getSiteSettings();

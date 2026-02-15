@@ -1,59 +1,11 @@
-import { client } from "@/lib/sanity";
-import { PortableText } from "next-sanity";
+import { getHomePage, getSiteSettings } from "@/lib/sanity/queries";
+import { PortableText } from "@portabletext/react";
 import type { Metadata } from "next";
 import Image from "next/image";
 
-interface PageData {
-  title: string;
-  content: any[];
-  metaDescription?: string;
-  image?: {
-    asset: {
-      url: string;
-      metadata: {
-        dimensions: {
-          width: number;
-          height: number;
-        };
-      };
-    };
-    alt?: string;
-  };
-}
-
-async function getHomeData(): Promise<PageData | null> {
-  return client.fetch(
-    `*[_type == "page" && (!defined(slug.current) || slug.current == "")][0]{
-      title,
-      content,
-      metaDescription,
-      image {
-        asset-> {
-          url,
-          metadata {
-            dimensions
-          }
-        },
-        alt
-      }
-    }`
-  );
-}
-
-async function getSiteSettings() {
-  return client.fetch(`*[_type == "siteSettings"][0]{
-    companyName,
-    ogImage {
-      asset-> {
-        url
-      }
-    }
-  }`);
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const [page, settings] = await Promise.all([
-    getHomeData(),
+    getHomePage(),
     getSiteSettings(),
   ]);
 
@@ -85,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const page = await getHomeData();
+  const page = await getHomePage();
 
   if (!page) {
     return <div>No homepage found</div>;
