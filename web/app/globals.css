@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-white: #F9F9F9;
+  --color-black: #172310;
+  --font-sans: var(--font-roboto), system-ui, sans-serif;
+  --font-serif: var(--font-roboto-slab), serif;
+  --grid-cols-4: repeat(4, minmax(0, 1fr));
+  --grid-cols-12: repeat(12, minmax(0, 1fr));
+  --text-sm: 0.875rem; /* 14px */
+  --text-sm-x: 0.875rem; /* 14px */
+  --text-md: 1rem; /* 16px */
+  --text-lg: 1.5rem; /* 24px */
+  --text-xl: 3rem; /* 48px */
+  --text-sm--line-height: 1.25rem; /* 20px */
+  --text-sm-x--line-height: 0.625rem; /* 10px */
+  --text-md--line-height: 1.5rem; /* 24px */
+  --text-lg--line-height: 2.125rem; /* 34px */
+  --text-xl--line-height: 3.375rem; /* 54px */
+  
+  --radius: 0.125rem; /* 2px */
+  --transition-duration-sm: 240ms;
+  --transition-duration-md: 480ms;
+  --transition-duration-lg: 960ms;
+  --ease-es: cubic-bezier(0.295, 0.850, 0.440, 1.000);
+  --animate-spin-slow: spin 4s linear infinite;
+}
+
+@layer utilities {
+  .grid_ { @apply grid grid-cols-4 lg:grid-cols-12 gap-x-4 px-6; }
+  .my-xl { @apply my-50 lg:my-60; }
+
+  .rich p { @apply mb-12; }
+  .rich p:last-child { @apply mb-0; }
+}

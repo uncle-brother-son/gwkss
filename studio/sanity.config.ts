@@ -28,10 +28,23 @@ export default defineConfig({
         S.list()
           .title('Content')
           .items([
+            singletonItem(S, 'home', 'Home'),
             S.listItem()
-              .title('Pages')
-              .schemaType('page')
-              .child(S.documentTypeList('page').title('Pages')),
+              .title('Services')
+              .child(
+                S.list()
+                  .title('Services')
+                  .items([
+                    singletonItem(S, 'servicesPage', 'Services Overview'),
+                    S.divider(),
+                    S.listItem()
+                      .title('Service Pages')
+                      .schemaType('service')
+                      .child(S.documentTypeList('service').title('Service Pages')),
+                  ])
+              ),
+            singletonItem(S, 'about', 'About'),
+            singletonItem(S, 'contact', 'Contact'),
             S.divider(),
             singletonItem(S, 'siteSettings', 'Site Settings'),
           ]),
@@ -44,7 +57,7 @@ export default defineConfig({
 
   document: {
     actions: (prev, {schemaType}) => {
-      const singletonTypes = ['siteSettings']
+      const singletonTypes = ['home', 'servicesPage', 'about', 'contact', 'siteSettings']
       
       if (singletonTypes.includes(schemaType)) {
         return prev.filter(
@@ -54,7 +67,7 @@ export default defineConfig({
       return prev
     },
     newDocumentOptions: (prev, {creationContext}) => {
-      const singletonTypes = ['siteSettings']
+      const singletonTypes = ['home', 'servicesPage', 'about', 'contact', 'siteSettings']
       
       if (creationContext.type === 'global') {
         return prev.filter(
