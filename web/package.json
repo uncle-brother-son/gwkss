@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "preview": "wrangler pages dev .open-next/worker --compatibility-date=2024-01-01 --compatibility-flag=nodejs_compat"
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@portabletext/react": "^6.0.3",
