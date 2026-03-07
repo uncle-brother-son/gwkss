@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true, // Cloudflare doesn't support Next.js Image Optimization API
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+        port: '',
+        pathname: '/images/**',
+      },
+    ],
   },
 };
 
