@@ -1,3 +1,4 @@
+import { path } from "framer-motion/m";
 import React from "react";
 
 interface IconProps {
@@ -46,6 +47,15 @@ export default function Icon({ name, className = "" }: IconProps) {
             <path d="M13 6.28027V7.73027H1V6.28027H13Z"/>
         </svg>
     ),
+
+    chevron: (
+        <svg className={className} viewBox="0 0 8 4" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.00161 4.00425L0.819633 0.822265L1.52674 0.115158L4.00161 2.59003L6.47649 0.115159L7.18359 0.822266L4.00161 4.00425Z"/>
+        </svg>
+    ),
+
+    
+
 
   };
 

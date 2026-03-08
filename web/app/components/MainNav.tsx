@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import TransitionLink from "./TransitionLink";
 import Icon from "./Icons";
 
@@ -25,9 +25,12 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileBackgroundVisible, setMobileBackgroundVisible] = useState(false);
+  const [mobileContentVisible, setMobileContentVisible] = useState(false);
   const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const openAnimationRef = useRef<number | null>(null);
+  const mobileCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate grid column positions based on number of menu items
   const getColumnClass = (index: number) => {
@@ -86,13 +89,46 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
   };
 
   const handleMobileClose = () => {
-    setMobileMenuOpen(false);
-    setExpandedItem(null);
+    // Fade out content first
+    setMobileContentVisible(false);
+    
+    // Remove background after page transition completes
+    // PageTransition uses mode="wait" with 0.5s duration for both exit and enter
+    // Exit: 500ms + Enter: 500ms = 1000ms total
+    mobileCloseTimeoutRef.current = setTimeout(() => {
+      setMobileMenuOpen(false);
+      setExpandedItem(null);
+      // Reset states
+      setMobileBackgroundVisible(false);
+    }, 1000);
   };
 
   const toggleSubmenu = (index: number) => {
     setExpandedItem(expandedItem === index ? null : index);
   };
+
+  // Animate mobile menu on open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Fade in background first
+      requestAnimationFrame(() => {
+        setMobileBackgroundVisible(true);
+      });
+      
+      // Then fade in content after background animation (480ms)
+      const contentTimeout = setTimeout(() => {
+        setMobileContentVisible(true);
+      }, 480);
+
+      return () => clearTimeout(contentTimeout);
+    }
+
+    return () => {
+      if (mobileCloseTimeoutRef.current) {
+        clearTimeout(mobileCloseTimeoutRef.current);
+      }
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <>
@@ -109,11 +145,9 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
             {item.submenu && item.submenu.length > 0 ? (
               <>
                 <div onMouseEnter={() => handleWrapperEnter(index, true)} onClick={handleLinkClick} >
-                  <TransitionLink href={item.link} className="flex items-center gap-1">
+                  <TransitionLink href={item.link} className="flex items-end gap-1">
                     {item.label}
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <Icon name="chevron" className="w-2 h-1 fill-black dark:fill-white" />
                   </TransitionLink>
                 </div>
                 
@@ -158,9 +192,20 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
 
       {/* Mobile Fullscreen Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-white dark:bg-black z-9999 lg:hidden overflow-y-auto flex flex-col p-6 gap-y-60">
+        <div className="fixed inset-0 z-9999 lg:hidden overflow-y-auto">
+          {/* Background */}
+          <div 
+            className="absolute inset-0 bg-white dark:bg-black transition duration-lg ease-gwk"
+            style={{
+              opacity: mobileBackgroundVisible ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
+            }}
+          />
+          
+          {/* Content Container */}
+          <div className="relative flex flex-col p-6 gap-y-60 min-h-full">
             
-            {/* Header */}
+            {/* Header - No fade */}
             <div className="flex flex-row justify-between items-start">
               <div onClick={handleMobileClose}>
                 <TransitionLink href="/" aria-label={companyName}>
@@ -170,23 +215,34 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
               <button className="text-sm-x" onClick={handleMobileClose}>Close</button>
             </div>
           
-
-            {/* Menu Items */}
-            <div className="grow flex flex-col gap-4 self-start">
+            {/* Menu Items - Fade in/out */}
+            <div 
+              className="grow flex flex-col gap-4 self-start transition-opacity duration-md"
+              style={{
+                opacity: mobileContentVisible ? 1 : 0,
+                transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
+              }}
+            >
               {menuItems.map((item, index) => (
                 <div key={item.link} className="flex flex-col">
                   {item.submenu && item.submenu.length > 0 ? (
                     <>
-                      <button onClick={() => toggleSubmenu(index)} className="text-md text-left flex items-center gap-2">
-                        {item.label}
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <div onClick={handleMobileClose}>
+                          <TransitionLink href={item.link} className="text-lg-m">
+                            {item.label}
+                          </TransitionLink>
+                        </div>
+                        <button onClick={() => toggleSubmenu(index)} className="p-1 -m-1 pt-2" aria-label={`Toggle ${item.label} submenu`}>
+                          <Icon name="chevron" className={`w-4 h-2 fill-black dark:fill-white transition duration-md ${expandedItem === index ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
                       
                       {expandedItem === index && (
                         <div className="my-4 ml-2 flex flex-col gap-2">
                           {item.submenu.map((subitem) => (
                             <div key={subitem.link} onClick={handleMobileClose}>
-                              <TransitionLink href={subitem.link} className="text-md">
+                              <TransitionLink href={subitem.link} className="text-lg-m">
                                 {subitem.label}
                               </TransitionLink>
                             </div>
@@ -196,7 +252,7 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
                     </>
                   ) : (
                     <div onClick={handleMobileClose}>
-                      <TransitionLink href={item.link} className="text-md">
+                      <TransitionLink href={item.link} className="text-lg-m">
                         {item.label}
                       </TransitionLink>
                     </div>
@@ -205,10 +261,17 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
               ))}
             </div>
 
-            <div className="text-sm-x">
+            {/* Copyright - Fade in/out */}
+            <div 
+              className="text-sm-x transition-opacity duration-md"
+              style={{
+                opacity: mobileContentVisible ? 1 : 0,
+                transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
+              }}
+            >
               &copy; {new Date().getFullYear()} {companyName} 
             </div>
-
+          </div>
         </div>
       )}
     </>

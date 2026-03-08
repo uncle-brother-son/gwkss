@@ -5,11 +5,13 @@ import { useEffect, useRef } from "react";
 interface GrainOverlayScaledProps {
   grainSize?: number; // Canvas scaling factor (higher = larger grain, better performance)
   frameInterval?: number; // Update every N frames (higher = slower animation)
+  animate?: boolean; // Whether to animate the grain (default: true)
 }
 
 export default function GrainOverlayScaled({ 
   grainSize = 8, 
-  frameInterval = 3 
+  frameInterval = 3,
+  animate = true
 }: GrainOverlayScaledProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -43,30 +45,40 @@ export default function GrainOverlayScaled({
       ctx.putImageData(imageData, 0, 0);
     };
 
-    const animate = () => {
+    const animateLoop = () => {
       frameCount++;
       if (frameCount % frameInterval === 0) {
         drawNoise();
       }
-      animationFrameId = requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animateLoop);
     };
 
     // Initial setup
     setCanvasSize();
-    animate();
+    
+    if (animate) {
+      animateLoop();
+    } else {
+      drawNoise(); // Draw once, no animation
+    }
 
     // Redraw on resize
     const handleResize = () => {
       setCanvasSize();
+      if (!animate) {
+        drawNoise(); // Redraw static grain on resize
+      }
     };
 
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
-  }, [grainSize, frameInterval]);
+  }, [grainSize, frameInterval, animate]);
 
   return (
     <canvas

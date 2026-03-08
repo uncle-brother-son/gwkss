@@ -4,7 +4,6 @@ import { Roboto, Roboto_Slab } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import GrainOverlay from "./components/GrainOverlay";
 import GrainOverlayScaled from "./components/GrainOverlayScaled";
 
 const roboto = Roboto({ weight: ["400", "500"], subsets: ["latin"], variable: "--font-roboto", display: "swap" });
@@ -22,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${roboto.variable} ${robotoSlab.variable}`}>
-      <body className="flex flex-col min-h-screen bg-white dark:bg-black text-black dark:text-white font-sans text-md subpixel-antialiased transition-colors duration-lg ease-gwk">
+      <body className="flex flex-col min-h-screen bg-white dark:bg-black text-black dark:text-white font-sans text-md subpixel-antialiased dark:antialiased transition-colors duration-lg ease-gwk">
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-EM23GJ3ZG8" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
@@ -37,8 +36,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <GrainOverlay grainSize={1} />
-        {/* <GrainOverlayScaled grainSize={1} frameInterval={6} /> */}
+        <GrainOverlayScaled grainSize={0.5} frameInterval={6} animate={false} />
       </body>
     </html>
   );
