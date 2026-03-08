@@ -1,13 +1,18 @@
-import { client } from "@/lib/sanity";
+import { client, urlFor } from "@/lib/sanity";
 import { PortableText } from "@portabletext/react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import BackgroundImage from "../../components/BackgroundImage";
+import TransitionBlock from "../../components/TransitionBlock";
+import Accordion from "../../components/Accordion";
 
 async function getService(slug: string) {
   const query = `*[_type == "service" && slug.current == $slug][0]{
     title,
     content,
     accordionSections,
+    image,
+    mobileImage,
     metaDescription
   }`;
   
@@ -39,30 +44,39 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold mb-8">{service.title}</h1>
-      {service.content && (
-        <div className="prose max-w-none mb-8">
-          <PortableText value={service.content} />
-        </div>
+    <>
+      {service?.image && (
+        <BackgroundImage
+          desktop={urlFor(service.image).width(1920).url()}
+          mobile={service?.mobileImage ? urlFor(service.mobileImage).width(1920).url() : undefined}
+          alt={service.title}
+        />
       )}
-      
-      {service.accordionSections && service.accordionSections.length > 0 && (
-        <div className="space-y-4 mt-12">
-          {service.accordionSections.map((section: any, index: number) => (
-            <details key={index} className="border border-gray-200 rounded-lg p-4">
-              <summary className="font-semibold text-lg cursor-pointer hover:text-gray-700">
-                {section.title}
-              </summary>
-              {section.content && (
-                <div className="prose max-w-none mt-4">
-                  <PortableText value={section.content} />
-                </div>
-              )}
-            </details>
-          ))}
-        </div>
-      )}
-    </div>
+      <div className="col-start-1 col-span-full grid_ my-xl gap-y-10">
+        {service?.title && (
+          <TransitionBlock
+            className="col-start-1 col-span-4 lg:col-start-2 lg:col-span-3 font-serif text-xl-m lg:text-xl"
+            delay={0.24}
+          >
+            <h1 className="">{service?.title}</h1>
+          </TransitionBlock>
+        )}
+
+        <TransitionBlock
+          className="col-start-1 col-span-4 lg:col-start-6 lg:col-span-4 mt-2"
+          delay={0.48}
+        >
+          {service.content && (
+            <div className="rich">
+              <PortableText value={service.content} />
+            </div>
+          )}
+        
+          {service.accordionSections && service.accordionSections.length > 0 && (
+            <Accordion sections={service.accordionSections} />
+          )}
+        </TransitionBlock>
+      </div>
+    </>
   );
 }

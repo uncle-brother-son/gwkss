@@ -1,7 +1,15 @@
-import { client } from "@/lib/sanity";
+import { client, urlFor } from "@/lib/sanity";
 import { PortableText } from "@portabletext/react";
-import Link from "next/link";
 import type { Metadata } from "next";
+import BackgroundImage from "../components/BackgroundImage";
+import TransitionBlock from "../components/TransitionBlock";
+import TransitionLink from "../components/TransitionLink";
+
+interface Service {
+  _id: string;
+  title: string;
+  slug: string;
+}
 
 async function getServicesPage() {
   const query = `*[_type == "servicesPage"][0]{
@@ -12,7 +20,7 @@ async function getServicesPage() {
       title,
       "slug": slug.current
     },
-    metaDescription
+    image,    mobileImage,    metaDescription
   }`;
   
   return client.fetch(query);
@@ -46,37 +54,42 @@ export default async function ServicesPage() {
   const displayServices = page?.menu && page.menu.length > 0 ? page.menu : services;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold mb-8">{page?.title || "Our Services"}</h1>
-      
-      {page?.content && (
-        <div className="prose max-w-none mb-12">
-          <PortableText value={page.content} />
-        </div>
+    <>
+      {page?.image && (
+        <BackgroundImage
+          desktop={urlFor(page.image).width(1920).url()}
+          mobile={page?.mobileImage ? urlFor(page.mobileImage).width(1920).url() : undefined}
+          alt={page.title}
+        />
       )}
-      
-      {displayServices.length > 0 ? (
-        <div className="grid md:grid-cols-2 gap-8">
-          {displayServices.map((service: any) => (
-            <Link 
-              key={service._id}
-              href={`/engineering-services/${service.slug}`}
-              className="block p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow"
-            >
-              <h2 className="text-2xl font-semibold mb-4">{service.title}</h2>
-              {service.content && service.content[0] && (
-                <p className="text-gray-700">
-                  {service.content[0].children?.[0]?.text || ''}
-                </p>
-              )}
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="text-gray-600">
-          <p>No services available yet.</p>
-        </div>
-      )}
-    </div>
+      <div className="col-start-1 col-span-full grid_ my-xl gap-y-10">
+        {page?.title && (
+          <TransitionBlock
+            className="col-start-1 col-span-4 lg:col-start-2 lg:col-span-3 font-serif text-xl-m lg:text-xl"
+            delay={0.24}
+          >
+            <h1 className="">{page?.title}</h1>
+          </TransitionBlock>
+        )}
+
+        <TransitionBlock
+          className="col-start-1 col-span-4 lg:col-start-6 lg:col-span-4 rich mt-2"
+          delay={0.48}
+        >
+          {page?.content && (
+            <div className="rich">
+              <PortableText value={page.content} />
+            </div>
+          )}
+          <div className="mt-10 space-y-4">
+            {displayServices?.map((service: Service) => (
+              <TransitionLink className="block hover:text-purple dark:hover:text-purple" key={service._id} href={`/engineering-services/${service.slug}`}>
+                {service.title}
+              </TransitionLink>
+            ))}
+          </div>
+        </TransitionBlock>
+      </div>
+    </>
   );
 }

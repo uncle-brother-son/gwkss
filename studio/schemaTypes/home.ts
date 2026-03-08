@@ -20,6 +20,24 @@ export default defineType({
       of: [{type: 'block'}],
     }),
     defineField({
+      name: 'image',
+      title: 'Featured Image (Desktop)',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      description: 'Image for desktop/tablet screens',
+    }),
+    defineField({
+      name: 'mobileImage',
+      title: 'Featured Image (Mobile)',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      description: 'Image for mobile screens. If not set, desktop image will be used.',
+    }),
+    defineField({
       name: 'metaDescription',
       title: 'Meta Description',
       type: 'text',

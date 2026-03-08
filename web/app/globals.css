@@ -1,35 +1,101 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-white: #F9F9F9;
-  --color-black: #172310;
+  --color-white: #F6F5F3;
+  --color-black: #0D140B;
+  --color-red: #9E2A2B;
+  --color-green: #22744A;
   --font-sans: var(--font-roboto), system-ui, sans-serif;
   --font-serif: var(--font-roboto-slab), serif;
   --grid-cols-4: repeat(4, minmax(0, 1fr));
   --grid-cols-12: repeat(12, minmax(0, 1fr));
+  --text-xs: 0.75rem; /* 12px */
   --text-sm: 0.875rem; /* 14px */
   --text-sm-x: 0.875rem; /* 14px */
   --text-md: 1rem; /* 16px */
+  --text-lg-m: 1.375rem; /* 22px */
   --text-lg: 1.5rem; /* 24px */
-  --text-xl: 3rem; /* 48px */
+  --text-xl-m: 1.75rem; /* 28px */
+  --text-xl: 2rem; /* 32px */
+  --text-xs--line-height: 0.875rem; /* 14px */
   --text-sm--line-height: 1.25rem; /* 20px */
   --text-sm-x--line-height: 0.625rem; /* 10px */
   --text-md--line-height: 1.5rem; /* 24px */
+  --text-lg-m--line-height: 2rem; /* 32px */
   --text-lg--line-height: 2.125rem; /* 34px */
-  --text-xl--line-height: 3.375rem; /* 54px */
+  --text-xl-m--line-height: 2rem; /*32px */
+  --text-xl--line-height: 2.25rem; /* 36px */
   
   --radius: 0.125rem; /* 2px */
   --transition-duration-sm: 240ms;
   --transition-duration-md: 480ms;
   --transition-duration-lg: 960ms;
-  --ease-es: cubic-bezier(0.295, 0.850, 0.440, 1.000);
+  --ease-gwk: cubic-bezier(0.295, 0.850, 0.440, 1.000);
   --animate-spin-slow: spin 4s linear infinite;
+  --z-9999: 9999;
 }
 
-@layer utilities {
+@layer base {
+    a { @apply block; }
+}
+
+@layer components {
+  
   .grid_ { @apply grid grid-cols-4 lg:grid-cols-12 gap-x-4 px-6; }
-  .my-xl { @apply my-50 lg:my-60; }
+  .my-xl { @apply my-50 lg:my-[30vh]; }
 
-  .rich p { @apply mb-12; }
+  .btn { @apply text-sm text-white dark:text-black bg-black dark:bg-white px-8 py-3.5 rounded flex flex-row gap-1 items-center justify-start; }
+
+  .richer p { @apply mb-12; }
+  .richer p:last-of-type { @apply mb-0; }
+
+  .rich p { @apply mb-6; }
   .rich p:last-child { @apply mb-0; }
+  .rich ul { @apply mb-12 ml-4 columns-1 lg:columns-2; }
+  .rich ul:last-child { @apply mb-0; }
+  .rich ul li { @apply relative; }
+  .rich ul li::before { @apply absolute top-0 -left-4; content: '—'; }
+
+  /* 
+  form { @apply flex flex-col gap-2; }
+  .field { @apply relative flex flex-col gap-2; }
+  .field-row { @apply flex flex-row gap-2; }
+  .field input, .field textarea, .field select { @apply appearance-none px-4 pt-5 pb-2 text-md lg:text-sm placeholder:text-xs lg:placeholder:text-sm box-border border border-transparent rounded text-black dark:text-white bg-black/10 dark:bg-white/10 focus:outline-none placeholder:text-black/60 dark:placeholder:text-white/60 duration-lg ease-gwk focus:bg-black/10 dark:focus:bg-white/10; }
+  .field input:-webkit-autofill, .field textarea:-webkit-autofill, .field select:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px rgba(233, 230, 223, 1) inset !important; -webkit-text-fill-color: #121214 !important; transition: background-color 5000s ease-in-out 0s; }
+  .dark .field input:-webkit-autofill, .dark .field textarea:-webkit-autofill, .dark .field select:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px rgba(29, 29, 31, 1) inset !important; -webkit-text-fill-color: #F5F2EB !important; transition: background-color 5000s ease-in-out 0s; }
+  .field label { @apply absolute top-4 left-4 text-md lg:text-sm text-black/60 dark:text-white/60 transition-all duration-sm ease-gwk cursor-text; }
+  .field input:focus + label, .field input:autofill:focus + label, .field input:-webkit-autofill:focus + label, .field input:not(:placeholder-shown) + label, .field textarea:focus + label, .field textarea:autofill:focus + label, .field textarea:-webkit-autofill:focus + label, .field textarea:not(:placeholder-shown) + label, .field select:valid + label, .field input:-webkit-autofill + label, .field textarea:-webkit-autofill + label, .field select:-webkit-autofill + label { @apply text-xs top-2; }
+  .field select:invalid { @apply text-black/60 dark:text-white/60; }
+  .field svg { @apply shrink-0 absolute top-4 right-4 pointer-events-none; }
+  input[type="text"], input[type="email"], input[type="date"], input[type="time"], input[type="tel"], input[type="search"], textarea { @apply appearance-none outline-none; }
+  input[type="search"] { @apply grow ; }
+  input[type="search"]::-webkit-search-cancel-button { @apply appearance-none; }
+  input[type="search"]::-webkit-search-decoration { @apply appearance-none; }
+  input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator  { @apply absolute top-4.5 right-4 p-0 h-4 w-4 opacity-0; }
+  .error { @apply flex gap-2 text-xs text-red px-4 mb-1; }
+  .success { @apply flex gap-2 text-xs text-green px-4 mb-1; } 
+  */
+
 }
+
+@layer utilities {} 
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+} 
