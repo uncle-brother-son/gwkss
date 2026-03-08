@@ -1,0 +1,7 @@
+# robots.txt for GWK Structural Solutions
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://gwkss.co.uk/sitemap.xml

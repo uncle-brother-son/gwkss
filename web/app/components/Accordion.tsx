@@ -15,11 +15,15 @@ interface AccordionProps {
   sections: AccordionSection[];
 }
 
-function AccordionItem({ section }: { section: AccordionSection }) {
+function AccordionItem({ section, index }: { section: AccordionSection; index: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [contentScope, animateContent] = useAnimate();
   const [wrapperScope, animateWrapper] = useAnimate();
   const contentRef = useRef<HTMLDivElement>(null);
+  const [announcement, setAnnouncement] = useState('');
+
+  const buttonId = `accordion-button-${index}`;
+  const panelId = `accordion-panel-${index}`;
 
   const toggleAccordion = async () => {
     if (!contentRef.current) return;
@@ -29,6 +33,7 @@ function AccordionItem({ section }: { section: AccordionSection }) {
     if (!isOpen) {
       // Opening sequence: expand height (480ms) → fade in content (480ms)
       setIsOpen(true);
+      setAnnouncement(`${section.title} section expanded`);
       
       // 1. Expand height
       await animateWrapper(
@@ -45,6 +50,7 @@ function AccordionItem({ section }: { section: AccordionSection }) {
       );
     } else {
       // Closing sequence: fade out content (480ms) → shrink height (480ms)
+      setAnnouncement(`${section.title} section collapsed`);
       
       // 1. Fade out content
       await animateContent(
@@ -66,10 +72,17 @@ function AccordionItem({ section }: { section: AccordionSection }) {
 
   return (
     <div className="flex flex-col">
+      {/* Screen reader announcement */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </div>
+      
       <button 
+        id={buttonId}
         onClick={toggleAccordion}
         className="flex items-center justify-between"
         aria-expanded={isOpen}
+        aria-controls={panelId}
       >
         <span>{section.title}</span>
         <Icon 
@@ -79,9 +92,12 @@ function AccordionItem({ section }: { section: AccordionSection }) {
       </button>
       
       <div 
+        id={panelId}
         ref={wrapperScope}
         className="overflow-hidden"
         style={{ height: 0 }}
+        role="region"
+        aria-labelledby={buttonId}
       >
         <div 
           ref={contentScope}
@@ -100,7 +116,7 @@ export default function Accordion({ sections }: AccordionProps) {
   return (
     <div className="space-y-2 mt-6">
       {sections.map((section, index) => (
-        <AccordionItem key={index} section={section} />
+        <AccordionItem key={index} section={section} index={index} />
       ))}
     </div>
   );

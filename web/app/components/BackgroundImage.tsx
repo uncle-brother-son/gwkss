@@ -1,7 +1,6 @@
 "use client";
 
-import { motion, useAnimate } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ResponsiveImage from "./ResponsiveImage";
 
 interface BackgroundImageProps {
@@ -11,40 +10,26 @@ interface BackgroundImageProps {
 }
 
 export default function BackgroundImage({ desktop, mobile, alt }: BackgroundImageProps) {
-  const [scope, animate] = useAnimate();
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // Watch for page-exiting class
+    // Watch for page-exiting class on body
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
-          const isExiting = document.body.classList.contains('page-exiting');
-          if (isExiting) {
-            // Wait 240ms after content starts, then fade out
-            setTimeout(() => {
-              animate(scope.current, { opacity: 0 }, { duration: 0.48, ease: [0.295, 0.85, 0.44, 1.0] });
-            }, 240);
-          }
+          const exiting = document.body.classList.contains('page-exiting');
+          setIsExiting(exiting);
         }
       });
     });
 
     observer.observe(document.body, { attributes: true });
     return () => observer.disconnect();
-  }, [animate, scope]);
+  }, []);
 
   return (
-    <motion.div
-      ref={scope}
-      className="fixed inset-0 -z-10"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 0.6 }}
-      transition={{
-        duration: 0.96,
-        ease: [0.295, 0.85, 0.44, 1.0],
-      }}
-    >
+    <div className={`background-image ${isExiting ? 'exiting' : ''} fixed inset-0 -z-10`}>
       <ResponsiveImage desktop={desktop} mobile={mobile} alt={alt} />
-    </motion.div>
+    </div>
   );
 }

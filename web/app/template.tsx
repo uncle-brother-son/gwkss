@@ -2,7 +2,7 @@
 
 import { AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 
 interface TemplateProps {
   children: ReactNode;
@@ -10,6 +10,11 @@ interface TemplateProps {
 
 export default function Template({ children }: TemplateProps) {
   const pathname = usePathname();
+  
+  // Remove page-exiting class when new page mounts
+  useEffect(() => {
+    document.body.classList.remove('page-exiting');
+  }, [pathname]);
   
   return (
     <AnimatePresence mode="wait">

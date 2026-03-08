@@ -11,17 +11,9 @@ export default function ResponsiveImage({ desktop, mobile, alt, className = "" }
   return (
     <picture className={className}>
       {mobile && (
-        <>
-          <source media="(max-width: 1023px)" srcSet={mobile} />
-        </>
+        <source media="(max-width: 1023px)" srcSet={mobile} />
       )}
-      <Image
-        src={desktop}
-        alt={alt}
-        fill
-        className="object-cover object-top"
-        priority
-      />
+      <Image src={desktop} alt={alt} fill className="object-cover object-top" priority />
     </picture>
   );
 }

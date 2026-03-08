@@ -1,37 +1,45 @@
-import { client, urlFor } from "@/lib/sanity";
+import { urlFor } from "@/lib/sanity";
 import { PortableText } from "@portabletext/react";
 import type { Metadata } from "next";
 import BackgroundImage from "../components/BackgroundImage";
 import TransitionBlock from "../components/TransitionBlock";
+import { getContactPage, getSiteSettings } from "@/lib/queries";
 
-async function getContactPage() {
-  const query = `*[_type == "contact"][0]{
-    title,
-    name,
-    address,
-    image,
-    mobileImage,
-    metaDescription
-  }`;
-  
-  return client.fetch(query);
-}
-
-async function getSiteSettings() {
-  const query = `*[_type == "siteSettings"][0]{
-    email,
-    phone
-  }`;
-  
-  return client.fetch(query);
-}
+// Revalidate every 24 hours - contact info changes rarely
+export const revalidate = 86400;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getContactPage();
+  const baseUrl = 'https://gwkss.co.uk';
+  
+  // Fetch OG image and company name from site settings
+  const settings = await getSiteSettings();
+  
+  const ogImageUrl = settings?.ogImage 
+    ? urlFor(settings.ogImage).width(1200).height(630).url()
+    : undefined;
   
   return {
-    title: page?.title || "Contact Us",
-    description: page?.metaDescription || "Get in touch with GWK Structural Solutions",
+    title: page?.title,
+    description: page?.metaDescription || '',
+    alternates: {
+      canonical: `${baseUrl}/contact`,
+    },
+    openGraph: {
+      title: page?.title,
+      description: page?.metaDescription || '',
+      url: `${baseUrl}/contact`,
+      siteName: settings?.companyName,
+      images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630 }] : [],
+      locale: 'en_GB',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page?.title || "Contact Us",
+      description: page?.metaDescription || '',
+      images: ogImageUrl ? [ogImageUrl] : [],
+    },
   };
 }
 
@@ -43,8 +51,8 @@ export default async function ContactPage() {
     <>
       {page?.image && (
         <BackgroundImage
-          desktop={urlFor(page.image).width(1920).url()}
-          mobile={page?.mobileImage ? urlFor(page.mobileImage).width(1920).url() : undefined}
+          desktop={urlFor(page.image).width(1600).url()}
+          mobile={page?.mobileImage ? urlFor(page.mobileImage).width(800).url() : undefined}
           alt={page.title}
         />
       )}

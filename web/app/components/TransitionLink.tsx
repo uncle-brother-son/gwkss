@@ -35,7 +35,7 @@ export default function TransitionLink({ href, children, className, "aria-label"
     // Wait for content + bg to exit (bg starts at 240ms, runs 480ms = 720ms total)
     setTimeout(() => {
       router.push(href);
-      document.body.classList.remove('page-exiting');
+      // Don't remove 'page-exiting' here - let template.tsx do it when new page loads
     }, 720);
   };
 
