@@ -11,7 +11,7 @@ export default async function StructuredData() {
     '@id': 'https://gwkss.co.uk/#organization',
     name: settings?.companyName || '',
     url: 'https://gwkss.co.uk',
-    logo: 'https://gwkss.co.uk/logo.png', // Update with actual logo URL when available
+    logo: 'https://gwkss.co.uk/GWK-Structural-Solutions-Logo.png',
     description: homePage?.metaDescription || '',
     email: settings?.email,
     telephone: settings?.phone,
