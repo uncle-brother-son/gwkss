@@ -298,7 +298,7 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
             <div className="flex flex-row justify-between items-start">
               <div onClick={handleMobileClose}>
                 <TransitionLink href="/" aria-label={companyName}>
-                  <Icon name="logo" className="fill-black dark:fill-white h-14" />
+                  <Icon name="logo" className="fill-black dark:fill-white h-18" />
                 </TransitionLink>
               </div>
               <button 
