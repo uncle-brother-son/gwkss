@@ -1,4 +1,3 @@
-import { path } from "framer-motion/m";
 import React from "react";
 
 interface IconProps {
