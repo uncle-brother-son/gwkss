@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAnimate } from "framer-motion";
 import TransitionLink from "./TransitionLink";
 import Icon from "./Icons";
 
@@ -21,28 +22,116 @@ interface MainNavProps {
   companyName?: string;
 }
 
+// Animation constants
+const ANIMATION_EASING = [0.295, 0.85, 0.44, 1.0] as const;
+const ANIMATION_DURATION = 0.48;
+const SUBMENU_STAGGER_DELAY = 240;
+const MOBILE_CLOSE_DELAY = 1000;
+const MOBILE_CONTENT_DELAY = 480;
+
+// Mobile menu item with animated submenu
+function MobileMenuItem({ item, onClose }: { item: MenuItem; onClose: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [contentScope, animateContent] = useAnimate();
+  const [wrapperScope, animateWrapper] = useAnimate();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const toggleSubmenu = async () => {
+    if (!item.submenu || !contentRef.current) return;
+
+    const contentHeight = contentRef.current.scrollHeight;
+
+    if (!isOpen) {
+      setIsOpen(true);
+      await animateWrapper(wrapperScope.current, { height: contentHeight }, { duration: ANIMATION_DURATION, ease: ANIMATION_EASING });
+      await animateContent(contentScope.current, { opacity: 1 }, { duration: ANIMATION_DURATION, ease: ANIMATION_EASING });
+    } else {
+      await animateContent(contentScope.current, { opacity: 0 }, { duration: ANIMATION_DURATION, ease: ANIMATION_EASING });
+      await animateWrapper(wrapperScope.current, { height: 0 }, { duration: ANIMATION_DURATION, ease: ANIMATION_EASING });
+      setIsOpen(false);
+    }
+  };
+
+  if (!item.submenu?.length) {
+    return (
+      <div onClick={onClose}>
+        <TransitionLink href={item.link} className="text-lg-m">
+          {item.label}
+        </TransitionLink>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2">
+        <div onClick={onClose}>
+          <TransitionLink href={item.link} className="text-lg-m">
+            {item.label}
+          </TransitionLink>
+        </div>
+        <button 
+          onClick={toggleSubmenu}
+          className="p-1 -m-1 pt-2" 
+          aria-label={`Toggle ${item.label} submenu`}
+          aria-expanded={isOpen}
+        >
+          <Icon 
+            name="chevron" 
+            className={`w-4 h-2 fill-black dark:fill-white transition-transform duration-md ease-gwk ${isOpen ? 'rotate-180' : ''}`} 
+          />
+        </button>
+      </div>
+      
+      <div ref={wrapperScope} className="overflow-hidden" style={{ height: 0 }}>
+        <div ref={contentRef}>
+          <div ref={contentScope} className="py-4 pl-2" style={{ opacity: 0 }}>
+            <ul className="flex flex-col gap-2">
+              {item.submenu.map((subitem) => (
+                <li key={subitem.link} onClick={onClose}>
+                  <TransitionLink href={subitem.link} className="text-lg-m">
+                    {subitem.label}
+                  </TransitionLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MainNav({ menuItems, companyName }: MainNavProps) {
+  // Desktop menu state
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Mobile menu state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileBackgroundVisible, setMobileBackgroundVisible] = useState(false);
   const [mobileContentVisible, setMobileContentVisible] = useState(false);
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const [menuAnnouncement, setMenuAnnouncement] = useState('');
+  
+  // Refs
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const openAnimationRef = useRef<number | null>(null);
   const mobileCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // Calculate grid column positions based on number of menu items
-  const getColumnClass = (index: number) => {
-    const startCol = 6 + index * 2;
-    return `lg:col-start-${startCol} lg:col-span-2`;
+  // Desktop menu handlers
+  const closeDropdown = () => {
+    if (openAnimationRef.current) {
+      cancelAnimationFrame(openAnimationRef.current);
+      openAnimationRef.current = null;
+    }
+    
+    setIsOpen(false);
+    closeTimeoutRef.current = setTimeout(() => setActiveDropdown(null), ANIMATION_DURATION * 1000 + (SUBMENU_STAGGER_DELAY * 3));
   };
 
   const handleWrapperEnter = (index: number, hasSubmenu: boolean) => {
-    // Clear any pending close
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
@@ -50,43 +139,11 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
     
     if (hasSubmenu) {
       setActiveDropdown(index);
-      // Trigger animation on next frame to ensure elements are mounted first
-      openAnimationRef.current = requestAnimationFrame(() => {
-        setIsOpen(true);
-      });
+      openAnimationRef.current = requestAnimationFrame(() => setIsOpen(true));
     }
   };
 
-  const handleWrapperLeave = () => {
-    // Cancel any pending open animation
-    if (openAnimationRef.current) {
-      cancelAnimationFrame(openAnimationRef.current);
-      openAnimationRef.current = null;
-    }
-    
-    setIsOpen(false);
-    
-    // Remove dropdown after animations complete
-    closeTimeoutRef.current = setTimeout(() => {
-      setActiveDropdown(null);
-    }, 480 + (240 * 3)); // Max animation time
-  };
-
-  const handleLinkClick = () => {
-    // Cancel any pending open animation
-    if (openAnimationRef.current) {
-      cancelAnimationFrame(openAnimationRef.current);
-      openAnimationRef.current = null;
-    }
-    
-    setIsOpen(false);
-    
-    // Remove dropdown after animations complete
-    closeTimeoutRef.current = setTimeout(() => {
-      setActiveDropdown(null);
-    }, 480 + (240 * 3)); // Max animation time
-  };
-
+  // Mobile menu handlers
   const handleMobileToggle = () => {
     const willOpen = !mobileMenuOpen;
     setMobileMenuOpen(willOpen);
@@ -94,30 +151,17 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
   };
 
   const handleMobileClose = () => {
-    // Fade out content first
     setMobileContentVisible(false);
     setMenuAnnouncement('Navigation menu closed');
     
-    // Remove background after page transition completes
-    // PageTransition uses mode="wait" with 0.5s duration for both exit and enter
-    // Exit: 500ms + Enter: 500ms = 1000ms total
     mobileCloseTimeoutRef.current = setTimeout(() => {
       setMobileMenuOpen(false);
-      setExpandedItem(null);
-      // Reset states
       setMobileBackgroundVisible(false);
-      // Restore focus to menu button
-      if (menuButtonRef.current) {
-        menuButtonRef.current.focus();
-      }
-    }, 1000);
+      menuButtonRef.current?.focus();
+    }, MOBILE_CLOSE_DELAY);
   };
 
-  const toggleSubmenu = (index: number) => {
-    setExpandedItem(expandedItem === index ? null : index);
-  };
-
-  // Keyboard handlers
+  // Keyboard event handlers
   const handleMobileToggleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -132,34 +176,23 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
     }
   };
 
-  const handleSubmenuToggleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleSubmenu(index);
-    }
-  };
-
-  // Animate mobile menu on open
+  // Mobile menu animations
   useEffect(() => {
-    if (mobileMenuOpen) {
-      // Fade in background first
-      requestAnimationFrame(() => {
-        setMobileBackgroundVisible(true);
-      });
-      
-      // Then fade in content after background animation (480ms)
-      const contentTimeout = setTimeout(() => {
-        setMobileContentVisible(true);
-      }, 480);
+    if (!mobileMenuOpen) return;
 
-      return () => clearTimeout(contentTimeout);
-    }
+    requestAnimationFrame(() => setMobileBackgroundVisible(true));
+    const contentTimeout = setTimeout(() => setMobileContentVisible(true), MOBILE_CONTENT_DELAY);
 
     return () => {
-      if (mobileCloseTimeoutRef.current) {
-        clearTimeout(mobileCloseTimeoutRef.current);
-      }
+      clearTimeout(contentTimeout);
+      if (mobileCloseTimeoutRef.current) clearTimeout(mobileCloseTimeoutRef.current);
     };
+  }, [mobileMenuOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [mobileMenuOpen]);
 
   // Focus trap and Escape key handler for mobile menu
@@ -167,34 +200,24 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
     if (!mobileMenuOpen || !mobileMenuRef.current) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Close on Escape
       if (e.key === 'Escape') {
         handleMobileClose();
         return;
       }
 
-      // Focus trap on Tab
       if (e.key === 'Tab') {
-        const focusableElements = mobileMenuRef.current?.querySelectorAll(
-          'a[href], button:not([disabled])'
-        );
-        if (!focusableElements || focusableElements.length === 0) return;
+        const focusableElements = mobileMenuRef.current?.querySelectorAll('a[href], button:not([disabled])');
+        if (!focusableElements?.length) return;
 
         const firstElement = focusableElements[0] as HTMLElement;
         const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-        if (e.shiftKey) {
-          // Shift+Tab: if on first element, wrap to last
-          if (document.activeElement === firstElement) {
-            e.preventDefault();
-            lastElement.focus();
-          }
-        } else {
-          // Tab: if on last element, wrap to first
-          if (document.activeElement === lastElement) {
-            e.preventDefault();
-            firstElement.focus();
-          }
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
         }
       }
     };
@@ -205,7 +228,6 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
 
   return (
     <>
-      {/* Screen reader announcement for mobile menu state */}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {menuAnnouncement}
       </div>
@@ -213,57 +235,51 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
       {/* Desktop Menu */}
       <nav aria-label="Main navigation" className="contents">
         <ul className="contents">
-          {menuItems.map((item, index) => {
-            const isActive = activeDropdown === index;
-            
-            return (
-              <li
-                key={item.link}
-                className={`hidden lg:flex flex-col justify-start items-start ${getColumnClass(index)} text-sm-x relative`}
-                onMouseLeave={handleWrapperLeave}
-              >
-                {item.submenu && item.submenu.length > 0 ? (
-                  <>
-                    <div onMouseEnter={() => handleWrapperEnter(index, true)} onClick={handleLinkClick} >
-                      <TransitionLink href={item.link} className="flex items-center gap-1">
-                        {item.label}
-                        <div className="pt-1"><Icon name="chevron" className="w-2 h-1 fill-black dark:fill-white transition-colors duration-lg ease-gwk" /></div>
-                      </TransitionLink>
-                    </div>
-                    
-                    {isActive && (
-                      <ul className="absolute top-6 left-0 py-6 flex flex-col gap-6">
-                        {item.submenu.map((subitem, subIndex) => {
-                          const totalItems = item.submenu!.length;
-                          const delay = isOpen 
-                            ? subIndex * 240 // Forward: 0, 240, 480...
-                            : (totalItems - 1 - subIndex) * 240; // Reverse: 480, 240, 0...
-                          
-                          return (
-                            <li
-                              key={subitem.link}
-                              onClick={handleLinkClick}
-                              className={`opacity-0 transition-opacity duration-md ${isOpen ? 'opacity-100' : ''}`}
-                              style={{
-                                transitionDelay: `${delay}ms`,
-                                transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
-                              }}
-                            >
-                              <TransitionLink href={subitem.link}>
-                                {subitem.label}
-                              </TransitionLink>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </>
-                ) : (
-                  <TransitionLink href={item.link}>{item.label}</TransitionLink>
-                )}
-              </li>
-            );
-          })}
+          {menuItems.map((item, index) => (
+            <li
+              key={item.link}
+              className={`hidden pb-4 lg:flex flex-col justify-start items-start lg:col-start-${6 + index * 2} lg:col-span-2 text-sm-x relative`}
+              onMouseLeave={closeDropdown}
+            >
+              {item.submenu?.length ? (
+                <>
+                  <div onMouseEnter={() => handleWrapperEnter(index, true)} onClick={closeDropdown}>
+                    <TransitionLink href={item.link} className="flex items-center gap-1">
+                      {item.label}
+                      <div className="pt-1">
+                        <Icon name="chevron" className="w-2 h-1 fill-black dark:fill-white transition-colors duration-lg ease-gwk" />
+                      </div>
+                    </TransitionLink>
+                  </div>
+                  
+                  <ul className={`absolute top-6 left-0 py-6 flex flex-col gap-6 ${activeDropdown !== index ? 'invisible pointer-events-none' : ''}`}>
+                    {item.submenu.map((subitem, subIndex) => {
+                      const delay = isOpen 
+                        ? subIndex * SUBMENU_STAGGER_DELAY
+                        : (item.submenu!.length - 1 - subIndex) * SUBMENU_STAGGER_DELAY;
+                      
+                      return (
+                        <li
+                          key={subitem.link}
+                          onClick={closeDropdown}
+                          className={`transition-opacity duration-md ease-gwk ${activeDropdown === index && isOpen ? 'opacity-100' : 'opacity-0'}`}
+                          style={{
+                            transitionDelay: `${delay}ms`,
+                          }}
+                        >
+                          <TransitionLink href={subitem.link}>
+                            {subitem.label}
+                          </TransitionLink>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              ) : (
+                <TransitionLink href={item.link}>{item.label}</TransitionLink>
+              )}
+            </li>
+          ))}
         </ul>
       </nav>
 
@@ -281,100 +297,48 @@ export default function MainNav({ menuItems, companyName }: MainNavProps) {
 
       {/* Mobile Fullscreen Menu */}
       {mobileMenuOpen && (
-        <div ref={mobileMenuRef} className="fixed inset-0 z-9999 lg:hidden overflow-y-auto">
-          {/* Background */}
-          <div 
-            className="absolute inset-0 bg-white dark:bg-black transition duration-lg ease-gwk"
-            style={{
-              opacity: mobileBackgroundVisible ? 1 : 0,
-              transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
-            }}
-          />
-          
-          {/* Content Container */}
-          <div className="relative flex flex-col p-6 gap-y-60 min-h-full">
-            
-            {/* Header - No fade */}
-            <div className="flex flex-row justify-between items-start">
-              <div onClick={handleMobileClose}>
-                <TransitionLink href="/" aria-label={companyName}>
-                  <Icon name="logo" className="fill-black dark:fill-white h-18" />
-                </TransitionLink>
-              </div>
-              <button 
-                className="text-sm-x" 
-                onClick={handleMobileClose}
-                onKeyDown={handleMobileCloseKeyDown}
-                aria-label="Close navigation menu"
-              >
-                Close
-              </button>
+        <div 
+          ref={mobileMenuRef} 
+          className="fixed inset-0 z-9999 lg:hidden overflow-y-auto flex flex-col p-6 bg-white dark:bg-black transition-opacity duration-md ease-gwk" 
+          style={{ opacity: mobileBackgroundVisible ? 1 : 0 }} 
+          role="dialog" 
+          aria-modal="true"
+        >
+          <div className="flex flex-row justify-between items-start">
+            <div onClick={handleMobileClose}>
+              <TransitionLink href="/" aria-label={companyName}>
+                <Icon name="logo" className="fill-black dark:fill-white h-18" />
+              </TransitionLink>
             </div>
-          
-            {/* Menu Items - Fade in/out */}
-            <nav aria-label="Mobile navigation" className="grow">
+            <button className="text-sm-x" onClick={handleMobileClose} onKeyDown={handleMobileCloseKeyDown} aria-label="Close navigation menu">
+              Close
+            </button>
+          </div>
+        
+          <div className="grow flex flex-col">
+            <nav aria-label="Mobile navigation" className="mt-40">
               <ul 
-                className="flex flex-col gap-4 self-start transition-opacity duration-md"
+                className="flex flex-col gap-4 self-start transition-opacity duration-md ease-gwk"
                 style={{
                   opacity: mobileContentVisible ? 1 : 0,
-                  transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
                 }}
               >
-                {menuItems.map((item, index) => (
-                  <li key={item.link} className="flex flex-col">
-                    {item.submenu && item.submenu.length > 0 ? (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <div onClick={handleMobileClose}>
-                            <TransitionLink href={item.link} className="text-lg-m">
-                              {item.label}
-                            </TransitionLink>
-                          </div>
-                          <button 
-                            onClick={() => toggleSubmenu(index)}
-                            onKeyDown={(e) => handleSubmenuToggleKeyDown(e, index)}
-                            className="p-1 -m-1 pt-2" 
-                            aria-label={`Toggle ${item.label} submenu`}
-                            aria-expanded={expandedItem === index}
-                          >
-                            <Icon name="chevron" className={`w-4 h-2 fill-black dark:fill-white transition duration-md ${expandedItem === index ? 'rotate-180' : ''}`} />
-                          </button>
-                        </div>
-                        
-                        {expandedItem === index && (
-                          <ul className="my-4 ml-2 flex flex-col gap-2">
-                            {item.submenu.map((subitem) => (
-                              <li key={subitem.link} onClick={handleMobileClose}>
-                                <TransitionLink href={subitem.link} className="text-lg-m">
-                                  {subitem.label}
-                                </TransitionLink>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </>
-                    ) : (
-                      <div onClick={handleMobileClose}>
-                        <TransitionLink href={item.link} className="text-lg-m">
-                          {item.label}
-                        </TransitionLink>
-                      </div>
-                    )}
+                {menuItems.map((item) => (
+                  <li key={item.link}>
+                    <MobileMenuItem item={item} onClose={handleMobileClose} />
                   </li>
                 ))}
               </ul>
             </nav>
+          </div>
 
-            {/* Copyright - Fade in/out */}
-            <div 
-              className="text-sm-x transition-opacity duration-md"
-              style={{
-                opacity: mobileContentVisible ? 1 : 0,
-                transitionTimingFunction: 'cubic-bezier(0.295, 0.850, 0.440, 1.000)',
-              }}
-            >
-              &copy; {new Date().getFullYear()} {companyName} 
-            </div>
+          <div 
+            className="text-sm-x transition-opacity duration-md ease-gwk"
+            style={{
+              opacity: mobileContentVisible ? 1 : 0,
+            }}
+          >
+            &copy; {new Date().getFullYear()} {companyName} 
           </div>
         </div>
       )}

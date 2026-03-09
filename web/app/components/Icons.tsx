@@ -63,25 +63,32 @@ export default function Icon({ name, className = "" }: IconProps) {
         </svg>
 
     ),
-    
     plus: (
         <svg className={className} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13 6.28027V7.73027H1V6.28027H13Z"/>
             <path d="M7.72539 1V13H6.27539V1H7.72539Z"/>
         </svg>
     ),
-
     minus: (
         <svg className={className} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13 6.28027V7.73027H1V6.28027H13Z"/>
         </svg>
     ),
-
     chevron: (
         <svg className={className} viewBox="0 0 8 4" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4.00161 4.00425L0.819633 0.822265L1.52674 0.115158L4.00161 2.59003L6.47649 0.115159L7.18359 0.822266L4.00161 4.00425Z"/>
         </svg>
     ),
+    arrow: (
+        <svg className={className} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.2691 3.70935L10.2944 4.73466L3.35532 11.6737L2.33002 10.6484L9.2691 3.70935Z"/>
+            <path d="M10.6693 3.33008L10.6693 4.78008L4.66925 4.78008L4.66925 3.33008L10.6693 3.33008Z"/>
+            <path d="M10.6695 3.33008L10.6695 9.33008L9.21954 9.33008L9.21954 3.33008L10.6695 3.33008Z"/>
+        </svg>
+    ),
+
+    
+
 
     
 

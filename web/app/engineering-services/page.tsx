@@ -5,6 +5,7 @@ import BackgroundImage from "../components/BackgroundImage";
 import TransitionBlock from "../components/TransitionBlock";
 import TransitionLink from "../components/TransitionLink";
 import { getServicesPage, getServices, getSiteSettings } from "@/lib/queries";
+import Icon from "../components/Icons";
 
 // Revalidate every hour - services updated occasionally
 export const revalidate = 3600;
@@ -85,10 +86,11 @@ export default async function ServicesPage() {
               <PortableText value={page.content} />
             </div>
           )}
-          <div className="mt-10 space-y-4">
+          <div className="mt-10 flex flex-col items-start gap-4">
             {displayServices?.map((service: Service) => (
-              <TransitionLink className="block hover:text-purple dark:hover:text-purple" key={service._id} href={`/engineering-services/${service.slug}`}>
+              <TransitionLink className="flex flex-row items-center gap-2" key={service._id} href={`/engineering-services/${service.slug}`}>
                 {service.title}
+                <Icon name="chevron" className="w-3 h-1.5 pr-0.5 -rotate-90 fill-black dark:fill-white transition-colors duration-lg ease-gwk" />
               </TransitionLink>
             ))}
           </div>
