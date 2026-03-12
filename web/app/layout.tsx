@@ -30,6 +30,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: defaultDescription,
     metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: '/',
+    },
     openGraph: {
       title: companyName,
       description: defaultDescription,
