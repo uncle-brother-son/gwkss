@@ -53,4 +53,5 @@ next-env.d.ts
 # Sanity
 .sanity
 
+# project info
 PROJECT_SETUP.md
