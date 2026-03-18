@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next';
 import { client } from '@/lib/sanity';
 
-// Revalidate sitemap daily - services added/removed infrequently
-export const revalidate = 86400;
+// On-demand revalidation via Sanity webhook
+export const revalidate = false;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://gwkss.co.uk';

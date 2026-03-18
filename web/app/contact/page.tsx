@@ -5,8 +5,8 @@ import BackgroundImage from "../components/BackgroundImage";
 import TransitionBlock from "../components/TransitionBlock";
 import { getContactPage, getSiteSettings } from "@/lib/queries";
 
-// Revalidate every 24 hours - contact info changes rarely
-export const revalidate = 86400;
+// On-demand revalidation via Sanity webhook
+export const revalidate = false;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getContactPage();

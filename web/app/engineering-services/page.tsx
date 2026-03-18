@@ -7,8 +7,8 @@ import TransitionLink from "../components/TransitionLink";
 import { getServicesPage, getServices, getSiteSettings } from "@/lib/queries";
 import Icon from "../components/Icons";
 
-// Revalidate every hour - services updated occasionally
-export const revalidate = 3600;
+// On-demand revalidation via Sanity webhook
+export const revalidate = false;
 
 interface Service {
   _id: string;

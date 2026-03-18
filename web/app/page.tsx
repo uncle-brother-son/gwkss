@@ -5,8 +5,8 @@ import BackgroundImage from "./components/BackgroundImage";
 import TransitionBlock from "./components/TransitionBlock";
 import { getHomePage, getSiteSettings } from "@/lib/queries";
 
-// Revalidate every hour - homepage content changes occasionally
-export const revalidate = 3600;
+// On-demand revalidation via Sanity webhook
+export const revalidate = false;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getHomePage();

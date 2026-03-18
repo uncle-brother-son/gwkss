@@ -8,8 +8,8 @@ import TransitionBlock from "../../components/TransitionBlock";
 import Accordion from "../../components/Accordion";
 import { getServiceBySlug, getSiteSettings, getServices } from "@/lib/queries";
 
-// Revalidate every hour - service content updated occasionally
-export const revalidate = 3600;
+// On-demand revalidation via Sanity webhook
+export const revalidate = false;
 
 // Pre-render all service pages at build time
 export async function generateStaticParams() {
