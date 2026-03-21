@@ -21,8 +21,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
   
-  // Force HTTPS (permanent 301)
-  if (url.protocol === 'http:') {
+  // Force HTTPS in production only (permanent 301)
+  if (url.protocol === 'http:' && process.env.NODE_ENV === 'production') {
     url.protocol = 'https:';
     return NextResponse.redirect(url, 301);
   }
